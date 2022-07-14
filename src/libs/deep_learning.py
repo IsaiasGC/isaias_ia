@@ -1,4 +1,5 @@
 import numpy as np
+from libs.dataset_proccesing import createMinibatches
 
 from libs.functions import ActivationFunction
 
@@ -58,7 +59,7 @@ class NeuralNetwork():
 
 class Utils():
 
-  def saveModel(model, outfilename):
+  def saveModel(model: NeuralNetwork, outfilename):
     '''Save model parameters to file
     Args:
     model (NeuralNetwork): the neural network model to save
@@ -95,3 +96,15 @@ class Utils():
           nl.b = bias
 
     return NN
+
+  def accuracyModel(model: NeuralNetwork, x, y, mb_size=10):
+    assert x.shape[1] == y.shape[1], 'No hay mismo numero de Y(1, Num_Element) que de X(Input_Parameters, Num_Element)'
+    num_correct = 0
+    num_total = 0
+    for (xi, yi) in createMinibatches(x, y, mb_size):
+      scores = model.run(xi)  # mb_size, 10
+      pred = scores.argmax(axis=0)  # shape(mb_size )
+      num_correct += (pred == yi.squeeze()).sum()
+      num_total += len(pred)
+
+    return float(num_correct)/num_total

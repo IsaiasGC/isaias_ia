@@ -5,7 +5,7 @@ from libs.functions import ActivationFunction
 class NeuralLayer():
   def __init__(self, n_conn, n_neur, act_fun):
     self.b = np.zeros((n_neur, 1))
-    self.w = np.random.rand(n_neur, n_conn) * 0.001
+    self.w = (np.random.rand(n_neur, n_conn) / np.sqrt(n_conn / 2)) # Init parameters: Kaiming He
     self.act_fun = self.__getFunction(act_fun)
 
   def __getFunction(self, act_fun):

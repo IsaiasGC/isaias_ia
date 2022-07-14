@@ -1,29 +1,42 @@
 import numpy as np
 
 
-def _reluDeriv(x):
-  x[x<=0] = 0
-  x[x>0] = 1
-  return x
+def _reluDeriv(z):
+  z[z <= 0] = 0
+  z[z > 0] = 1
+  return z
 
-def _sofmax(z):
-  x=z.copy()
-  # print(f"Z= {z.shape}")
-  # exp_scores = np.exp(x)
-  # sum_exp_scores = np.sum(exp_scores, axis=0)
-  return np.exp(x) / np.exp(x).sum(axis=1) [:,None]
+def _sofmax(z):# z.shape = (clases, elements)
+  max = np.max(z)
+  exp_z = np.exp(z - max)
+  sum_exp = np.sum(exp_z, axis=0)
+  f_z = exp_z / sum_exp
+  return f_z
 
-def _sofmaxDeriv(z):
+def _sofmaxDeriv(z):  # z.shape = (clases, elements)
   return np.multiply( z, 1 - z ) + sum(- z * np.roll( z, i, axis = 1 ) for i in range(1, z.shape[1] ))
 
 def _Xentropy(Yp, Yr):
-  N = len(Yr)
-  y_hat = Yp[Yr.squeeze(), np.arange(N)]
-  return np.sum(-np.log(y_hat)) / N
-  # return (np.where(Yr==1,-np.log(Yp.clip(min=1e-8,max=None)), 0)).sum(axis=1)
+  assert Yp.shape[1] == Yr.shape[1], 'Mismo numero de elementos en Yp(clases, elementos) y Yr(1,elementos)'
+  y = Yr.copy()
+  if (y.shape[0] != 1): y = y.argmax(axis=0)
+  y = y.squeeze()
+  m = Yp.shape[1]
+  probs = Yp[y, np.arange(m)]
+  log_y = -np.log(probs)
+  f_Yp = np.sum(log_y) / m
+  return f_Yp
 
 def _XentropyDeriv(Yp, Yr):
-  return np.where(Yr==1,-1/Yp, 0)
+  assert Yp.shape[1] == Yr.shape[1], 'Mismo numero de elementos en Yp(clases, elementos) y Yr(1,elementos)'
+  y = Yr.copy()
+  if (y.shape[0] != 1): y = y.argmax(axis=0)
+  y = y.squeeze()
+  m = Yp.shape[1]
+  grad = Yp.copy()
+  grad[y, np.arange(m)] -= 1
+  grad = grad / m
+  return grad
 
 
 class ActivationFunction():
@@ -32,10 +45,10 @@ class ActivationFunction():
   relu = (lambda z: np.maximum(0, z),
           lambda z: _reluDeriv(np.copy(z)))
   sofmax = (lambda z: _sofmax(z),
-            lambda z: _sofmaxDeriv(z))
+            lambda z: np.ones((z.shape)))
 
 class CostFunction():
-  mse = (lambda Yp, Yr: np.mean((Yp-Yr) ** 2),
+  mse = (lambda Yp, Yr: np.mean((Yp - Yr) ** 2),
          lambda Yp, Yr: (Yp - Yr))
   xe = (lambda Yp, Yr: _Xentropy(Yp, Yr),
-        lambda Yp, Yr: _XentropyDeriv(Yp,Yr))
+        lambda Yp, Yr: _XentropyDeriv(Yp, Yr))

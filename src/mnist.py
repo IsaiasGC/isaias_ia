@@ -13,15 +13,13 @@ IMAGES_PATH = './src/images/'
 N_SAMPLES = 50000
 INPUT_PARAMETERS = 28 * 28
 EPOCHS = 1500
-LR = 0.003
+LR = 0.338
 
 # Create Dataset
 x_train_num, y_train_num, x_test_num, y_test_num = get_nmist_dataset(IMAGES_PATH)
 
 X_TRAIN = x_train_num[:N_SAMPLES].reshape(N_SAMPLES, -1).astype(np.float32)/255
 Y_TRAIN = y_train_num[:N_SAMPLES].reshape(N_SAMPLES, 1)
-# x_val = x_train_num[N_SAMPLES:].reshape(10000, -1).astype(np.float32)/255
-# y_val = y_train_num[N_SAMPLES:].reshape(10000, 1)
 X_TEST = x_test_num.copy().reshape(10000, -1).astype(np.float32)/255
 Y_TEST = y_test_num.copy().reshape(10000, 1)
 
@@ -75,13 +73,12 @@ for i in range(pY.shape[1]):
   print(f"Propuesto: {res.argmax()}, Real: {py[0,0]}, Costo: {cost}")
 
 totalCost /= len(pY)
-print("")
-print("")
+print()
 print("----------------------------------------------------------------------")
 print("----------------------------------------------------------------------")
+print()
 print(f"Medial Cost: {totalCost}")
-print("")
-print("")
+print()
 print("----------------------------------------------------------------------")
 print("----------------------------------------------------------------------")
 

@@ -1,5 +1,15 @@
+# Virtual envs
 /venv
+
+# building models
 /models
-**/images
-**/__pycache__
 **.npz
+
+# assets to test
+**/images
+
+# cache
+**/__pycache__
+
+# vs code
+/.vscode

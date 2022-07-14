@@ -10,19 +10,19 @@ from libs.dataset_proccesing import createMinibatches
 IMAGES_PATH = './src/images/'
 
 
-N_SAMPLES = 5000
+N_SAMPLES = 50000
 INPUT_PARAMETERS = 28 * 28
-EPOCHS = 100
-LR = 0.3
+EPOCHS = 1500
+LR = 0.003
 
 # Create Dataset
 x_train_num, y_train_num, x_test_num, y_test_num = get_nmist_dataset(IMAGES_PATH)
 
 X_TRAIN = x_train_num[:N_SAMPLES].reshape(N_SAMPLES, -1).astype(np.float32)/255
 Y_TRAIN = y_train_num[:N_SAMPLES].reshape(N_SAMPLES, 1)
-# x_val = x_train_num[N_SAMPLES:].reshape(10000, -1).astype(np.float)/255
+# x_val = x_train_num[N_SAMPLES:].reshape(10000, -1).astype(np.float32)/255
 # y_val = y_train_num[N_SAMPLES:].reshape(10000, 1)
-X_TEST = x_test_num.copy().reshape(10000, -1).astype(np.float)/255
+X_TEST = x_test_num.copy().reshape(10000, -1).astype(np.float32)/255
 Y_TEST = y_test_num.copy().reshape(10000, 1)
 
 X_TRAIN = X_TRAIN.T
@@ -48,27 +48,41 @@ loss = []
 NN.trainable = True
 
 for i in range(EPOCHS):
-  for (x, y) in createMinibatches(X_TRAIN, Y_TRAIN, 1000):
+  for (x, y) in createMinibatches(X_TRAIN, Y_TRAIN, 500):
     pY = NN.run(x, OPTIMIZER, y)
 
-  # if(i % 10 == 0):
-  loss.append(CostFunction.xe[0](pY, y))
-  print(f"Epoch: {i} -> loss: {loss[-1]}")
+  if(i % 10 == 0):
+    loss.append(CostFunction.xe[0](pY, y))
+    print(f"Epoch: {i} -> loss: {loss[-1]}")
+
 NN.trainable = False
 
 # Test the NN
 print(f"X_TEST={X_TEST.shape}")
 print(f"Y_TEST={Y_TEST.shape}")
 
-yP = NN.run(X_TEST).squeeze()
+pY = NN.run(X_TEST)
+
 totalCost = 0
-for i, res in enumerate(yP):
-  cost = CostFunction.xe[0](res, Y_TEST[:,i])
+for i in range(pY.shape[1]):
+  res = pY[:, i].reshape(10, 1)
+  py = Y_TEST[:, i].reshape(1, 1)
+
+  cost = CostFunction.xe[0](res, py)
   totalCost += cost
+
   print("----------------------------------------------------------------------")
-  print(f"Propuesto: {res}, Real: {Y_TEST[:,i]}, Costo: {cost}")
+  print(f"Propuesto: {res.argmax()}, Real: {py[0,0]}, Costo: {cost}")
 
-totalCost /= len(yP)
+totalCost /= len(pY)
+print("")
+print("")
+print("----------------------------------------------------------------------")
+print("----------------------------------------------------------------------")
 print(f"Medial Cost: {totalCost}")
+print("")
+print("")
+print("----------------------------------------------------------------------")
+print("----------------------------------------------------------------------")
 
-Utils.saveModel(NN, "./make_circles")
+Utils.saveModel(NN, "./mnist")
